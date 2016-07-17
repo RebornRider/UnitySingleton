@@ -31,9 +31,33 @@ public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : Single
     public static T Instance { get; private set; }
 
     /// <summary>   Awakes this object. </summary>
-    private void Awake()
+    protected virtual void Awake()
     {
         ValidateSingletonInBuild();
+    }
+
+    /// <summary>   Validates the singleton in build. </summary>
+    ///
+    /// <exception cref="MultipleSingletonInstanceException">   Thrown when a Multiple Singleton
+    ///                                                         Instance error if this is duplicate instance occurs.
+    ///                                                         </exception>
+    private void ValidateSingletonInBuild()
+    {
+        if (null != Instance)
+        {
+            Destroy(this);
+            throw new MultipleSingletonInstanceException("Amount of Instances of " + typeof(T).Name + " more then one");
+        }
+        Instance = (T)this;
+    }
+
+    /// <summary>   Unassigns Instance on destruction. </summary>
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
     }
 
     /// <summary>   Resets this object. Called when adding a component in Editor or when Reseting a component in editor. Validates Singleton character. </summary>
@@ -172,27 +196,4 @@ public abstract class SingletonMonoBehaviour<T> : MonoBehaviour where T : Single
     }
 
 #endif
-    /// <summary>   Validates the singleton in build. </summary>
-    ///
-    /// <exception cref="MultipleSingletonInstanceException">   Thrown when a Multiple Singleton
-    ///                                                         Instance error if this is duplicate instance occurs.
-    ///                                                         </exception>
-    private void ValidateSingletonInBuild()
-    {
-        if (null != Instance)
-        {
-            Destroy(this);
-            throw new MultipleSingletonInstanceException("Amount of Instances of " + typeof(T).Name + " more then one");
-        }
-        Instance = (T)this;
-    }
-
-    /// <summary>   Unassigns Instance on destruction. </summary>
-    private void OnDestroy()
-    {
-        if (Instance == this)
-        {
-            Instance = null;
-        }
-    }
 }
